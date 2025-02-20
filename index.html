@@ -40,34 +40,52 @@
         let target = document.getElementById("target");
         let status = document.getElementById("status");
         let gameActive = true;
-        let timer;
         let phase = 1;
-        
-        function moveTarget() {
-            let x = Math.random() * (window.innerWidth - 100);
-            let y = Math.random() * (window.innerHeight - 100);
-            target.style.left = `${x}px`;
-            target.style.top = `${y}px`;
+        let timer;
+        let movementInterval;
+
+        function moveTargetSlowly() {
+            movementInterval = setInterval(() => {
+                let x = parseFloat(target.style.left || "50%") + (Math.random() * 20 - 10);
+                let y = parseFloat(target.style.top || "50%") + (Math.random() * 20 - 10);
+                x = Math.max(0, Math.min(window.innerWidth - 100, x));
+                y = Math.max(0, Math.min(window.innerHeight - 100, y));
+                target.style.left = `${x}px`;
+                target.style.top = `${y}px`;
+            }, 500);
         }
-        
+
         function startGame() {
             phase = 1;
             gameActive = true;
-            status.textContent = "Keep your cursor in the area!";
-            moveTarget();
+            status.textContent = "Keep your cursor in the moving area!";
+            moveTargetSlowly();
             
             setTimeout(() => {
                 if (gameActive) {
                     phase = 2;
                     status.textContent = "Now click the target within 2 seconds!";
-                    moveTarget();
+                    clearInterval(movementInterval);
+                    moveTargetFast();
                     timer = setTimeout(gameOver, 2000);
                 }
-            }, 30000);
+            }, 20000);
+        }
+
+        function moveTargetFast() {
+            function jumpTarget() {
+                let x = Math.random() * (window.innerWidth - 100);
+                let y = Math.random() * (window.innerHeight - 100);
+                target.style.left = `${x}px`;
+                target.style.top = `${y}px`;
+            }
+            jumpTarget();
+            movementInterval = setInterval(jumpTarget, 500);
         }
 
         function gameOver() {
             gameActive = false;
+            clearInterval(movementInterval);
             let insults = [
                 "You wouldn’t be fit to clean the latrines at Taco Bell.",
                 "You have the reaction speed of a snail on tranquilizers.",
@@ -80,12 +98,21 @@
         }
 
         target.addEventListener("mouseenter", () => {
-            if (phase === 1) moveTarget();
+            if (phase === 1) {
+                clearTimeout(timer);
+            }
+        });
+        
+        target.addEventListener("mouseleave", () => {
+            if (phase === 1) {
+                gameOver();
+            }
         });
         
         target.addEventListener("click", () => {
             if (phase === 2) {
                 clearTimeout(timer);
+                clearInterval(movementInterval);
                 startGame();
             }
         });
