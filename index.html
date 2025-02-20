@@ -3,121 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mouse Tracking Challenge</title>
+    <title>Matching Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #1e1e1e;
             color: white;
-            overflow: hidden;
         }
-        #gameArea {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
         }
-        #target {
-            width: 100px;
-            height: 100px;
-            background-color: red;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: gray;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .flipped {
+            background-color: white;
+            color: black;
         }
     </style>
 </head>
 <body>
-    <h1>Mouse Tracking Challenge</h1>
-    <p id="status">Keep your cursor inside the moving target!</p>
-    <div id="gameArea">
-        <div id="target"></div>
-    </div>
-
+    <h1>Impossible Matching Game</h1>
+    <p id="status">Find a match within 10 tries!</p>
+    <div id="gameBoard"></div>
+    
     <script>
-        let target = document.getElementById("target");
+        const symbols = "!@#$%^&*()_+-=[]{}|;:',.<>?/".split("");
+        const boardSize = 100;
+        const cells = [];
+        let attempts = 0;
+        let firstSelection = null;
         let status = document.getElementById("status");
-        let gameActive = true;
-        let phase = 1;
-        let timer;
-        let movementInterval;
 
-        function moveTargetSlowly() {
-            movementInterval = setInterval(() => {
-                let x = parseFloat(target.style.left || "50%") + (Math.random() * 20 - 10);
-                let y = parseFloat(target.style.top || "50%") + (Math.random() * 20 - 10);
-                x = Math.max(0, Math.min(window.innerWidth - 100, x));
-                y = Math.max(0, Math.min(window.innerHeight - 100, y));
-                target.style.left = `${x}px`;
-                target.style.top = `${y}px`;
-            }, 500);
+        function createBoard() {
+            const board = document.getElementById("gameBoard");
+            for (let i = 0; i < boardSize; i++) {
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                let symbol = symbols[i % symbols.length] + i;
+                cell.dataset.symbol = symbol;
+                cell.addEventListener("click", () => flipCell(cell));
+                board.appendChild(cell);
+                cells.push(cell);
+            }
         }
 
-        function startGame() {
-            phase = 1;
-            gameActive = true;
-            status.textContent = "Keep your cursor in the moving area!";
-            moveTargetSlowly();
+        function flipCell(cell) {
+            if (cell.classList.contains("flipped")) return;
+            cell.textContent = cell.dataset.symbol;
+            cell.classList.add("flipped");
             
-            setTimeout(() => {
-                if (gameActive) {
-                    phase = 2;
-                    status.textContent = "Now click the target within 2 seconds!";
-                    clearInterval(movementInterval);
-                    moveTargetFast();
-                    timer = setTimeout(gameOver, 2000);
+            if (!firstSelection) {
+                firstSelection = cell;
+            } else {
+                attempts++;
+                if (attempts >= 10) {
+                    endGame();
                 }
-            }, 20000);
+                setTimeout(() => {
+                    firstSelection.textContent = "";
+                    firstSelection.classList.remove("flipped");
+                    cell.textContent = "";
+                    cell.classList.remove("flipped");
+                    firstSelection = null;
+                }, 1000);
+            }
         }
 
-        function moveTargetFast() {
-            function jumpTarget() {
-                let x = Math.random() * (window.innerWidth - 100);
-                let y = Math.random() * (window.innerHeight - 100);
-                target.style.left = `${x}px`;
-                target.style.top = `${y}px`;
-            }
-            jumpTarget();
-            movementInterval = setInterval(jumpTarget, 500);
+        function endGame() {
+            status.textContent = "Don't worry, we know you tried your best. I'm sure you'll do better next time!";
         }
 
-        function gameOver() {
-            gameActive = false;
-            clearInterval(movementInterval);
-            let insults = [
-                "You wouldn’t be fit to clean the latrines at Taco Bell.",
-                "You have the reaction speed of a snail on tranquilizers.",
-                "Even a goldfish has better hand-eye coordination than you.",
-                "Your ancestors are embarrassed by this display.",
-                "NASA has confirmed: you are a failure at life."
-            ];
-            status.textContent = insults[Math.floor(Math.random() * insults.length)];
-            new Audio('https://www.soundjay.com/button/beep-07.wav').play();
-        }
-
-        target.addEventListener("mouseenter", () => {
-            if (phase === 1) {
-                clearTimeout(timer);
-            }
-        });
-        
-        target.addEventListener("mouseleave", () => {
-            if (phase === 1) {
-                gameOver();
-            }
-        });
-        
-        target.addEventListener("click", () => {
-            if (phase === 2) {
-                clearTimeout(timer);
-                clearInterval(movementInterval);
-                startGame();
-            }
-        });
-        
-        startGame();
+        createBoard();
     </script>
 </body>
 </html>
