@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impossible Matching Game</title>
+    <title>Intelligence Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,71 +42,27 @@
     </style>
 </head>
 <body>
-    <h1>Impossible Matching Game</h1>
+    <h1>Intelligence Test</h1>
     <p id="status">Find a match within 10 tries!</p>
     <div id="gameBoard"></div>
     <button onclick="resetGame()">Reset Game</button>
     
     <script>
-        const emojis = ["😀", "😂", "😎", "😍", "🤯", "🤡", "🥳", "🤖", "👻", "💩", "🚀", "🎸", "⚡", "🐱", "🐶", "🐸", "🦄", "🌎", "🍕", "🍔", "🍩", "🎃", "🎭", "🎯", "🎮", "🎲", "🎵", "📸", "🚗", "🚴", "🏆", "🏀", "⚽", "⛷", "🏄", "🛶", "🎤", "🎻", "🥁", "🎺", "🥇", "🏹", "🧩", "🎯", "🎳", "🎭", "🎮", "🛹", "🏇", "🚢", "🛩", "🚜", "🚓", "🛸", "🚄", "🗿", "🎡", "🎢", "🎠", "🎨", "🖼", "🏝", "🗼", "🛕", "🕌", "🏰", "🏯", "🛤", "🌋", "🏞", "🏜", "🌅", "🏔", "🌁", "🌉", "🌌", "🌠", "🎇", "✨", "🔥", "💧", "🌊", "☀", "❄", "🌪", "🌈", "🌂", "☂", "🕶", "⌛", "⏳", "⏰", "📅", "📆", "📜", "📖", "📚", "🔮", "💎", "🔑", "🔔", "🎶", "📢", "🔊", "🎧"];
-        let boardSize = 100;
-        let cells = [];
-        let attempts = 0;
-        let firstSelection = null;
-        let status = document.getElementById("status");
+        function getRandomIQ() {
+            return Math.floor(Math.random() * 21) + 60;
+        }
         
-        function createBoard() {
-            const board = document.getElementById("gameBoard");
-            board.innerHTML = "";
-            let shuffledEmojis = [...emojis].sort(() => Math.random() - 0.5);
-            cells = [];
-            
-            for (let i = 0; i < boardSize; i++) {
-                let cell = document.createElement("div");
-                cell.classList.add("cell");
-                let emoji = shuffledEmojis[i % shuffledEmojis.length];
-                cell.dataset.emoji = emoji;
-                cell.addEventListener("click", () => flipCell(cell));
-                board.appendChild(cell);
-                cells.push(cell);
-            }
-            status.textContent = "Find a match within 10 tries!";
-            attempts = 0;
-            firstSelection = null;
-        }
-
-        function flipCell(cell) {
-            if (cell.classList.contains("flipped")) return;
-            cell.textContent = cell.dataset.emoji;
-            cell.classList.add("flipped");
-            
-            if (!firstSelection) {
-                firstSelection = cell;
-            } else {
-                attempts++;
-                if (attempts >= 10) {
-                    endGame();
-                }
-                setTimeout(() => {
-                    firstSelection.textContent = "";
-                    firstSelection.classList.remove("flipped");
-                    cell.textContent = "";
-                    cell.classList.remove("flipped");
-                    firstSelection = null;
-                }, 1000);
-            }
-        }
-
         function endGame() {
-            status.textContent = "Don't worry, we know you tried your best. I'm sure you'll do better next time!";
+            let iq = getRandomIQ();
+            status.textContent = `Don't worry, we know you tried your best. Your IQ is estimated at ${iq}. I'm sure you'll do better next time!`;
             document.getElementById("gameBoard").style.gridTemplateColumns = `repeat(${Math.floor(Math.random() * 5) + 5}, 50px)`;
         }
-
+        
         function resetGame() {
             createBoard();
             document.getElementById("gameBoard").style.gridTemplateColumns = "repeat(10, 50px)";
         }
-
+        
         createBoard();
     </script>
 </body>
